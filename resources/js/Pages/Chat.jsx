@@ -10,14 +10,22 @@ import { Input } from 'postcss';
 
 export default function Sample() {
 
+    const [inputText, setInputText] = useState('');
     const [gptMessages, setGptMessage] = useState([]);
 
     const API_URL = "http://localhost/api/chat-gpt";
 
+    const handleInputTextChange = (event) => {
+        setInputText(event.target.value);
+    };
+
     const callChatGptButton = async() => {
         try {
-            const response = await axios.get(API_URL);
-            setGptMessage(response.data.content);
+            const response = await axios.post(API_URL, {
+                'inputText': inputText
+            });
+            
+            setGptMessage(response.data);
         } catch {
             setGptMessage("error");
         }
@@ -25,24 +33,25 @@ export default function Sample() {
     
     return (
         <>  
-            <Head title="Welcome" />
+            <Head title="Chat" />
             <div className="bg-gray-50 min-h-screen dark:bg-black dark:text-black/50 flex flex-col items-center">
                 <InputLabel className=" top-0 text-[50px]">Test</InputLabel>
-                <div className="selection:bg-[#FF2D20] w-full">
-                    <TextInput className="mt-10 w-2/3"></TextInput>
+                <div className="w-full">
+                    <TextInput className="mt-10 w-2/3" onChange={handleInputTextChange}></TextInput>
                 </div>
-                <div className="selection:bg-[#FF2D20] w-full">
+                <div className="w-full">
                     <Button className="mt-10 text-black bg-white" onClick={callChatGptButton}>submit</Button>
                 </div>
 
-                
-                    {gptMessages.map((gptMessage) => {
-                        return (
-                            <div className="selection:bg-[#FF2D20] w-full" key={gptMessage.id}>
-                                <InputLabel className="mt-10 text-black bg-white" children={gptMessage.name}></InputLabel>
-                            </div>
-                        );
-                    })}
+                {gptMessages.map((gptMessage) => {
+                    return (
+                        <div className="w-full" key={gptMessage.id}>
+                            <InputLabel className="mt-10 text-black bg-white" children={gptMessage.question}></InputLabel>
+                            <Button className="mt-3 text-black bg-white">○</Button>
+                            <Button className="mt-3 text-black bg-white ml-10">×</Button>
+                        </div>
+                    );
+                })}
             </div>
         </>
     );

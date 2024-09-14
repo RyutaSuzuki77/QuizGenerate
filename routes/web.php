@@ -8,13 +8,13 @@ use Inertia\Inertia;
 
 ##画面
 Route::get('/', function () {
-    return Inertia::render('Sample', [
+    return Inertia::render('Chat', [
     ]);
 });
 
 ##API
 Route::prefix('api')->group(function () {
-    Route::get('/chat-gpt', [PostChatGptController::class, 'index']);
+    Route::post('/chat-gpt', [PostChatGptController::class, 'chat']);
 });
 
 Route::get('/welcome', function () {

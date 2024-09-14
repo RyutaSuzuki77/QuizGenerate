@@ -6,40 +6,42 @@ use Illuminate\Http\Request;
 use OpenAI\Laravel\Facades\OpenAI;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Validator;
 
 class PostChatGptController extends Controller
 {
-    public function index()
+    private const fixedMessage = 'の○×問題を3問出してください。json形式で、中身はidとquestionとExplanationとanswerで。answerは、○の場合：true、×の場合:falseで。json以外のメッセージとマークアップは不要です。理解できない場合は、';
+
+    public function chat(Request $request): JsonResponse 
     {
-        $messages = [
-            'role' => 'user',
-            "content" => '今日の東京の天気は？'
-        ];
+        $validator = Validator::make($request->all(), ['inputText' => 'required']);
+        if ($validator->fails()) {
+            return response()->json(
+                [
+                    [
+                        'id' => 1,
+                        'question' => 'error'
+                    ]
+                ],
+                200,
+                [],
+                JSON_UNESCAPED_UNICODE
+            );
+        }
+        
         $result = OpenAI::chat()->create([
-            'model' => 'gpt-3.5-turbo',
+            'model' => 'gpt-4-o',
             'messages' => [
                 [
                     'role' => 'user',
-                    'content' => '今日の東京の天気は？'
+                    'content' => $request->inputText.self::fixedMessage
                 ]
             ]
         ]);
 
-        // Log::Info($result['choice'][0]['text']);
-
         return response()->json(
-            [
-                'content' => [
-                    [
-                        'id' => 1,
-                        'name' => 'test'
-                    ],
-                    [
-                        'id' => 2,
-                        'name' => $result->choices[0]->message->content
-                    ]
-                ]
-            ],
+            json_decode($result->choices[0]->message->content),
             200,
             [],
             JSON_UNESCAPED_UNICODE
